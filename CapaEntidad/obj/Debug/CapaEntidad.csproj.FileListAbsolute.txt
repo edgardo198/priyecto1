@@ -1,0 +1,12 @@
+C:\Users\edgar\OneDrive\Escritorio\WEB.MVC\WEB.MVC\CapaEntidad\bin\Debug\CapaEntidad.dll
+C:\Users\edgar\OneDrive\Escritorio\WEB.MVC\WEB.MVC\CapaEntidad\bin\Debug\CapaEntidad.pdb
+C:\Users\edgar\OneDrive\Escritorio\WEB.MVC\WEB.MVC\CapaEntidad\obj\Debug\CapaEntidad.csproj.AssemblyReference.cache
+C:\Users\edgar\OneDrive\Escritorio\WEB.MVC\WEB.MVC\CapaEntidad\obj\Debug\CapaEntidad.csproj.CoreCompileInputs.cache
+C:\Users\edgar\OneDrive\Escritorio\WEB.MVC\WEB.MVC\CapaEntidad\obj\Debug\CapaEntidad.dll
+C:\Users\edgar\OneDrive\Escritorio\WEB.MVC\WEB.MVC\CapaEntidad\obj\Debug\CapaEntidad.pdb
+C:\Users\edgar\OneDrive\Escritorio\WEB.MVC\CapaEntidad\bin\Debug\CapaEntidad.dll
+C:\Users\edgar\OneDrive\Escritorio\WEB.MVC\CapaEntidad\bin\Debug\CapaEntidad.pdb
+C:\Users\edgar\OneDrive\Escritorio\WEB.MVC\CapaEntidad\obj\Debug\CapaEntidad.csproj.AssemblyReference.cache
+C:\Users\edgar\OneDrive\Escritorio\WEB.MVC\CapaEntidad\obj\Debug\CapaEntidad.csproj.CoreCompileInputs.cache
+C:\Users\edgar\OneDrive\Escritorio\WEB.MVC\CapaEntidad\obj\Debug\CapaEntidad.dll
+C:\Users\edgar\OneDrive\Escritorio\WEB.MVC\CapaEntidad\obj\Debug\CapaEntidad.pdb
