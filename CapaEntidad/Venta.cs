@@ -15,7 +15,7 @@ namespace CapaEntidad
         public string Contacto { get; set; }
         public string IdDistrito { get; set; }
         public string Telefono { get; set; }
-        public string Descripcion { get; set; }
+        public string Direccion { get; set; }
         public string FechaTexto { get; set; }
         public string IdTransaccion { get; set; }
         public List<DetalleVenta> oDetalleVenta { get; set; }

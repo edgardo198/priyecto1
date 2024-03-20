@@ -4,6 +4,12 @@ using System.Collections.Generic;
 using System.Web.Mvc;
 using System.IO;
 using System.Linq;
+using Antlr.Runtime.Tree;
+using Microsoft.Ajax.Utilities;
+using System.Threading.Tasks;
+using System.Data;
+using System.Globalization;
+using System;
 
 namespace CapaPresentacionTienda.Controllers
 {
@@ -78,6 +84,179 @@ namespace CapaPresentacionTienda.Controllers
             jsonresult.MaxJsonLength = int.MaxValue;
 
             return jsonresult;
+        }
+
+        [HttpPost]
+        public JsonResult AgregarCarrito(int idproducto)
+        {
+
+            int idcliente = ((Cliente)Session["Cliente"]).IdCliente;
+
+            bool existe = new CN_Carrito().ExisteCarrito(idcliente, idproducto);
+
+            bool respuesta = false;
+
+            string mensaje = string.Empty;
+
+            if(existe)
+            {
+                mensaje = "El producto ya esta en el carrito";
+
+            }
+            else
+            {
+                respuesta = new CN_Carrito().OperacionCarrito(idcliente, idproducto, true, out mensaje);
+            }
+            return Json(new { respuesta = respuesta, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+
+        }
+
+        [HttpGet]
+        public JsonResult CantidadEnCarrito()
+        {
+            int idcliente = ((Cliente)Session["Cliente"]).IdCliente;
+            int cantidad = new CN_Carrito().CantidadEnCarrito(idcliente);
+            return Json(new { cantidad = cantidad}, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        public ActionResult ListarProductosCarrito()
+        {
+            int idcliente = ((Cliente)Session["Cliente"]).IdCliente;
+            List<Carrito> oLista = new List<Carrito>();
+            bool conversion;
+
+            oLista = new CN_Carrito().ListarProducto(idcliente).Select(oc => new Carrito()
+            {
+                oProducto = new Producto()
+                {
+                    IdProducto = oc.oProducto.IdProducto,
+                    Nombre = oc.oProducto.Nombre,
+                    oMarca = oc.oProducto.oMarca,
+                    Precio = oc.oProducto.Precio,
+                    RutaImagen = oc.oProducto.RutaImagen,
+                    Base64 = CN_Recursos.CombertirBase64(Path.Combine(oc.oProducto.RutaImagen, oc.oProducto.NombreImagen), out conversion),
+                    Extencion = Path.GetExtension(oc.oProducto.NombreImagen)
+                },
+                Cantidad = oc.Cantidad
+            }).ToList();
+            return Json(new { data = oLista }, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        public JsonResult OperacionCarrito(int idproducto, bool sumar)
+        {
+            int idcliente = ((Cliente)Session["Cliente"]).IdCliente;
+
+            bool respuesta = false;
+            string mensaje = string.Empty;
+
+            if (sumar)
+            {
+                respuesta = new CN_Carrito().OperacionCarrito(idcliente, idproducto, true, out mensaje);
+            }
+            else
+            {
+                respuesta = new CN_Carrito().OperacionCarrito(idcliente, idproducto, false, out mensaje);
+            }
+
+            return Json(new { respuesta = respuesta, mensaje = mensaje });
+        }
+
+        [HttpPost]
+        public JsonResult EliminarCarrito(int idproducto)
+        {
+            int idcliente = ((Cliente)Session["Cliente"]).IdCliente;
+            bool respuesta = false;
+            string mensaje = string.Empty;
+            respuesta = new  CN_Carrito().EliminarCarrito(idcliente, idproducto);
+
+            return Json(new { respuesta = respuesta, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        public JsonResult ObtenerDepartamentio()
+        {
+            List<Departamento> oLista = new List<Departamento>();
+            oLista = new CN_Ubicacion().ObtenerDepartamento();
+            return Json(new { lista = oLista }, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        public JsonResult ObtenerProvincia(string iddepartamento)
+        {
+            List<Provincia> oLista = new List<Provincia>();
+            oLista = new CN_Ubicacion().ObtenerProvincia(iddepartamento);
+            return Json(new { lista = oLista }, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        public JsonResult ObtenerDsitrito(string iddepartamento,string idprovincia)
+        {
+            List<Distrito> oLista = new List<Distrito>();
+            oLista = new CN_Ubicacion().ObtenerDistrito(iddepartamento, idprovincia);
+            return Json(new { lista = oLista }, JsonRequestBehavior.AllowGet);
+        }
+
+        public ActionResult Carrito()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> ProcesarPago(List<Carrito> oListaCarrito,Venta oVenta)
+        {
+            decimal total = 0;
+
+            DataTable detalle_venta = new DataTable();
+            detalle_venta.Locale = new CultureInfo("ES-Hn");
+            detalle_venta.Columns.Add("IdProducto", typeof(string));
+            detalle_venta.Columns.Add("Cantidad", typeof(int));
+            detalle_venta.Columns.Add("Total", typeof(decimal));
+
+            foreach(Carrito oCarrito in oListaCarrito)
+            {
+                decimal subtotal = Convert.ToDecimal(oCarrito.Cantidad.ToString()) * oCarrito.oProducto.Precio;
+                total += subtotal;
+
+                detalle_venta.Rows.Add(new object[]
+                {
+                    oCarrito.oProducto.IdProducto,
+                    oCarrito.Cantidad,
+                    subtotal
+                });
+            }
+
+            oVenta.MontoTotal = total;
+            oVenta.IdCliente = ((Cliente)Session["Cliente"]).IdCliente;
+
+            TempData["Venta"] = oVenta;
+            TempData["DetalleVenta"] = detalle_venta;
+
+            return Json(new { Status = true, Link ="/Tienda/PagoEfectuado?idTransaccion=code0001&status=true"}, JsonRequestBehavior.AllowGet);
+        }
+
+        public async Task<ActionResult> PagoEfectuado()
+     {
+            string idtransaccion = Request.QueryString["idTransaccion"];
+            bool status = Convert.ToBoolean(Request.QueryString["status"]);
+
+            ViewData["Status"] = status;
+
+            if (status)
+            {
+                Venta oVenta =(Venta)TempData["Venta"];
+                DataTable detalle_venta = (DataTable)TempData["DetalleVenta"];
+
+                oVenta.IdTransaccion = idtransaccion;
+                string mensaje = string.Empty;
+
+                bool respuesta = new CN_Venta().Registrar(oVenta, detalle_venta, out mensaje);
+
+                ViewData["IdTransaccion"] = oVenta.IdTransaccion;
+
+            }
+            return View();
         }
     }
 }
