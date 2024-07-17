@@ -186,3 +186,6 @@ C:\Users\edgar\OneDrive\Escritorio\WEB.MVC\CapaPresentacionTienda\obj\Debug\Capa
 C:\Users\edgar\OneDrive\Escritorio\WEB.MVC\CapaPresentacionTienda\obj\Debug\CapaPresentacionTienda.csproj.CopyComplete
 C:\Users\edgar\OneDrive\Escritorio\WEB.MVC\CapaPresentacionTienda\obj\Debug\CapaPresentacionTienda.dll
 C:\Users\edgar\OneDrive\Escritorio\WEB.MVC\CapaPresentacionTienda\obj\Debug\CapaPresentacionTienda.pdb
+C:\Users\edgar\OneDrive\Escritorio\WEB.MVC\CapaPresentacionTienda\bin\HtmlAgilityPack.dll
+C:\Users\edgar\OneDrive\Escritorio\WEB.MVC\CapaPresentacionTienda\bin\HtmlAgilityPack.pdb
+C:\Users\edgar\OneDrive\Escritorio\WEB.MVC\CapaPresentacionTienda\bin\HtmlAgilityPack.xml

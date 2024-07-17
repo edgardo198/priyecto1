@@ -120,7 +120,6 @@
                     $("#producto-carrito").html("");
 
                     $.each(response.data, function (i, item) {
-                        console.log(response.data)
                         $("<div>").addClass("card mb-2 card-producto").append(
                             $("<div>").addClass("card-body").append(
                                 $("<div>").addClass("row").append(
@@ -331,53 +330,69 @@
 
         });
 
-        function RealizarPago() {
-            if (parseInt($("#cantidadcarrito").text()) === 0) {
-                swal("", "No hay productos en el carrito.", "warning");
-                return;
-            }
-            if ($("#cbodistrito").val() === null || $("#txtnombrecompleto").val() === "" || $("#txttelefono").val() === "") {
-                swal("", "Debe completar todos los campos de envío.", "warning");
-                return;
-            }
-
-            var venta = {
-                TotalProducto: $("input.input-cantidad").length,
-                MontoTotal: 0,
-                Contacto: $("#txtnombrecompleto").val(),
-                IdDistrito: $("#cbodistrito").val(),
-                Telefono: $("#txttelefono").val(),
-                Direccion: $("#txtdireccion").val()
-            };
-
-            var lista_carrito = [];
-            $("input.input-cantidad").each(function (i) {
-                var producto = $(this).data("oProducto");
-                var cantidad = parseFloat($(this).val());
-
-                lista_carrito.push({
-                    oProducto: producto,
-                    Cantidad: cantidad
-                });
-            });
-
-            $.ajax({
-                url: "@Url.Action("ProcesarPago", "Tienda")",
-                type: "POST",
-                data: JSON.stringify({ oListaCarrito: lista_carrito, oVenta: venta }),
-                dataType: "json",
-                contentType: "application/json; charset=utf-8",
-                success: function (data) {
-                    if (data.Status) {
-                        window.location.href = data.Link;
-                    } else {
-                        swal("", "Por favor, inténtalo de nuevo más tarde.", "warning");
-                    }
-                },
-                error: function (error) {
-                    swal("", "Se produjo un error al procesar el pago.", "error");
-                }
-            });
+       function RealizarPago() {
+        // Validar si hay productos en el carrito
+        if (parseInt($("#cantidadcarrito").text()) === 0) {
+            swal("", "No hay productos en el carrito.", "warning");
+            return;
         }
+
+    // Validar campos de envío
+        if ($("#cbodistrito").val() === null || $("#txtnombrecompleto").val().trim() === "" || $("#txttelefono").val().trim() === "") {
+            swal("", "Debe completar todos los campos de envío.", "warning");
+            return;
+         }
+
+    // Construir el objeto de venta
+        var venta = {
+            TotalProducto: $("input.input-cantidad").length,
+            MontoTotal: 0,
+            Contacto: $("#txtnombrecompleto").val().trim(),
+            IdDistrito: $("#cbodistrito").val(),
+            Telefono: $("#txttelefono").val().trim(),
+            Direccion: $("#txtdireccion").val().trim()
+        };
+
+    // Construir la lista de productos en el carrito
+        var lista_carrito = [];
+        $("input.input-cantidad").each(function () {
+            var producto = $(this).data("oProducto");
+            var cantidad = parseFloat($(this).val());
+
+        lista_carrito.push({
+            oProducto: producto,
+            Cantidad: cantidad
+        });
+    });
+
+    // Realizar la petición AJAX
+    $.ajax({
+        url: "@Url.Action("ProcesarPago", "Tienda")",
+        type: "POST",
+        data: JSON.stringify({ oListaCarrito: lista_carrito, oVenta: venta }),
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        success: function (data) {
+            if (data.Status) {
+                var jsonresult = data.Response;
+                var links = jsonresult.links;
+                var resultado = links.find(item => item.rel === "approve");
+                if (resultado) {
+                    window.location.href = resultado.href;
+                } else {
+                    swal("", "No se encontró el enlace de aprobación. Inténtalo de nuevo.", "warning");
+                }
+            } else {
+                swal("", "Por favor, inténtalo de nuevo más tarde.", "warning");
+            }
+        },
+        error: function (error) {
+            console.error("Error en la petición AJAX:", error);
+            swal("", "Se produjo un error al procesar el pago.", "error");
+        }
+    });
+}
+
+
     </script>
 }
