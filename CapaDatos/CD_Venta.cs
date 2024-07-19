@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using CapaEntidad;
-using System.Data.SqlClient;
 using System.Data;
+using System.Data.SqlClient;
+using CapaEntidad;
 
 namespace CapaDatos
 {
@@ -21,23 +17,23 @@ namespace CapaDatos
                 using (SqlConnection oconexion = new SqlConnection(Conexion.cn))
                 {
                     SqlCommand cmd = new SqlCommand("usp_RegistrarVenta", oconexion);
-                    cmd.Parameters.AddWithValue("IdCliente", obj.IdCliente);
-                    cmd.Parameters.AddWithValue("TotalProducto", obj.TotalProducto);
-                    cmd.Parameters.AddWithValue("MontoTotal", obj.MontoTotal);
-                    cmd.Parameters.AddWithValue("Contacto", obj.Contacto);
-                    cmd.Parameters.AddWithValue("IdDistrito", obj.IdDistrito);
-                    cmd.Parameters.AddWithValue("Telefono", obj.Telefono);
-                    cmd.Parameters.AddWithValue("Direccion", obj.Direccion);
-                    cmd.Parameters.AddWithValue("IdTransaccion", obj.IdTransaccion);
-                    cmd.Parameters.AddWithValue("DetalleVenta", DetalleVenta);
-                    cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
-                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 500).Direction = ParameterDirection.Output;
+                    cmd.Parameters.AddWithValue("@IdCliente", obj.IdCliente);
+                    cmd.Parameters.AddWithValue("@TotalProducto", obj.TotalProducto);
+                    cmd.Parameters.AddWithValue("@MontoTotal", obj.MontoTotal);
+                    cmd.Parameters.AddWithValue("@Contacto", obj.Contacto);
+                    cmd.Parameters.AddWithValue("@IdDistrito", obj.IdDistrito);
+                    cmd.Parameters.AddWithValue("@Telefono", obj.Telefono);
+                    cmd.Parameters.AddWithValue("@Direccion", obj.Direccion);
+                    cmd.Parameters.AddWithValue("@IdTransaccion", obj.IdTransaccion);
+                    cmd.Parameters.AddWithValue("@DetalleVenta", DetalleVenta);
+                    cmd.Parameters.Add("@Resultado", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("@Mensaje", SqlDbType.VarChar, 500).Direction = ParameterDirection.Output;
                     cmd.CommandType = CommandType.StoredProcedure;
 
                     oconexion.Open();
                     cmd.ExecuteNonQuery();
-                    respuesta = Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
-                    Mensaje = cmd.Parameters["Mensaje"].Value.ToString();
+                    respuesta = Convert.ToBoolean(cmd.Parameters["@Resultado"].Value);
+                    Mensaje = cmd.Parameters["@Mensaje"].Value.ToString();
                 }
             }
             catch (Exception ex)
@@ -46,7 +42,6 @@ namespace CapaDatos
                 Mensaje = ex.Message;
             }
             return respuesta;
-
         }
     }
 }

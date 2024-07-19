@@ -16,3 +16,5 @@ C:\Users\edgar\OneDrive\Escritorio\WEB.MVC\CapaDatos\obj\Debug\CapaDatos.csproj.
 C:\Users\edgar\OneDrive\Escritorio\WEB.MVC\CapaDatos\obj\Debug\CapaDatos.csproj.CopyComplete
 C:\Users\edgar\OneDrive\Escritorio\WEB.MVC\CapaDatos\obj\Debug\CapaDatos.dll
 C:\Users\edgar\OneDrive\Escritorio\WEB.MVC\CapaDatos\obj\Debug\CapaDatos.pdb
+C:\Users\edgar\OneDrive\Escritorio\WEB.MVC\CapaDatos\bin\Debug\Newtonsoft.Json.dll
+C:\Users\edgar\OneDrive\Escritorio\WEB.MVC\CapaDatos\bin\Debug\Newtonsoft.Json.xml

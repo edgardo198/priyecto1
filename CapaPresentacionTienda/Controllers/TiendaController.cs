@@ -11,6 +11,8 @@ using System.Data;
 using System.Globalization;
 using System;
 using CapaEntidad.Paypal;
+using HtmlAgilityPack;
+using System.Net.Http;
 
 namespace CapaPresentacionTienda.Controllers
 {
@@ -204,10 +206,34 @@ namespace CapaPresentacionTienda.Controllers
             return View();
         }
 
+        private async Task<decimal> ObtenerTipoCambio()
+        {
+            string url = "https://www.google.com/finance/quote/USD-HNL?sa=X&ved=2ahUKEwibxbTw-7CHAxVPVzABHbfUDxMQmY0JegQIGxAp";
+
+            var httpClient = new HttpClient();
+            var html = await httpClient.GetStringAsync(url);
+
+            var htmlDocument = new HtmlDocument();
+            htmlDocument.LoadHtml(html);
+
+            var priceNode = htmlDocument.DocumentNode.SelectSingleNode("//div[@class='YMlKec fxKbKc']");
+            if (priceNode != null)
+            {
+                string priceText = priceNode.InnerText.Replace(",", "").Replace("HNL", "").Trim();
+                if (decimal.TryParse(priceText, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal tipoCambio))
+                {
+                    return tipoCambio;
+                }
+            }
+
+            throw new Exception("No se pudo obtener el tipo de cambio.");
+        }
+
         [HttpPost]
         public async Task<JsonResult> ProcesarPago(List<Carrito> oListaCarrito, Venta oVenta)
         {
-            decimal total = 0;
+            decimal totalLempiras = 0;
+            decimal tipoCambio = await ObtenerTipoCambio();
 
             DataTable detalle_venta = new DataTable();
             detalle_venta.Locale = new CultureInfo("es-HN");
@@ -219,8 +245,8 @@ namespace CapaPresentacionTienda.Controllers
 
             foreach (Carrito oCarrito in oListaCarrito)
             {
-                decimal subtotal = oCarrito.Cantidad * oCarrito.oProducto.Precio;
-                total += subtotal;
+                decimal subtotalLempiras = oCarrito.Cantidad * oCarrito.oProducto.Precio;
+                totalLempiras += subtotalLempiras;
 
                 oListaItem.Add(new Item()
                 {
@@ -229,30 +255,32 @@ namespace CapaPresentacionTienda.Controllers
                     unit_amount = new UnitAmount()
                     {
                         currency_code = "USD",
-                        value = oCarrito.oProducto.Precio.ToString("G", new CultureInfo("es-HN"))
+                        value = (oCarrito.oProducto.Precio / tipoCambio).ToString("F2", CultureInfo.InvariantCulture)
                     }
                 });
 
                 detalle_venta.Rows.Add(new object[]
                 {
-            oCarrito.oProducto.IdProducto,
-            oCarrito.Cantidad,
-            subtotal
+                oCarrito.oProducto.IdProducto,
+                oCarrito.Cantidad,
+                subtotalLempiras
                 });
             }
+
+            decimal totalUSD = totalLempiras / tipoCambio;
 
             PurchaseUnit purchaseUnit = new PurchaseUnit()
             {
                 amount = new Amount()
                 {
                     currency_code = "USD",
-                    value = total.ToString("G", new CultureInfo("es-HN")),
+                    value = totalUSD.ToString("F2", CultureInfo.InvariantCulture),
                     breakdown = new Breakdown()
                     {
                         item_total = new ItemTotal()
                         {
                             currency_code = "USD",
-                            value = total.ToString("G", new CultureInfo("es-HN"))
+                            value = totalUSD.ToString("F2", CultureInfo.InvariantCulture)
                         }
                     }
                 },
@@ -274,7 +302,7 @@ namespace CapaPresentacionTienda.Controllers
                 }
             };
 
-            oVenta.MontoTotal = total;
+            oVenta.MontoTotal = totalUSD;
             oVenta.IdCliente = ((Cliente)Session["Cliente"]).IdCliente;
 
             TempData["Venta"] = oVenta;
@@ -289,7 +317,6 @@ namespace CapaPresentacionTienda.Controllers
             }
             catch (Exception ex)
             {
-                
                 System.Diagnostics.Debug.WriteLine("Error al crear la solicitud de PayPal: " + ex.Message);
                 return Json(new { Status = false, Message = "Error al crear la solicitud de PayPal: " + ex.Message }, JsonRequestBehavior.AllowGet);
             }
@@ -315,7 +342,6 @@ namespace CapaPresentacionTienda.Controllers
             }
             catch (Exception ex)
             {
-               
                 System.Diagnostics.Debug.WriteLine("Error al aprobar el pago de PayPal: " + ex.Message);
                 ViewData["Status"] = false;
                 ViewData["Message"] = "Error al aprobar el pago de PayPal: " + ex.Message;
@@ -339,6 +365,6 @@ namespace CapaPresentacionTienda.Controllers
 
             return View();
         }
-
+        
     }
 }
