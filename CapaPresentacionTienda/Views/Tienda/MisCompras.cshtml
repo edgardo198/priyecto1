@@ -1,0 +1,115 @@
+﻿@model List<CapaEntidad.DetalleVenta>
+
+@{
+    ViewBag.Title = "Mis Compras";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var totalGeneral = Model.Sum(x => x.TotalProducto);
+}
+
+<h2 class="mb-4">Mis Compras</h2>
+
+<!-- Contenedor para las facturas -->
+<div id="facturasContainer"></div>
+
+<div class="card mt-4">
+    <div class="card-body">
+        <h3>Resumen General</h3>
+        <p><strong>Total General de Compras:</strong> @totalGeneral.ToString("C")</p>
+    </div>
+</div>
+
+
+<script>
+// Los datos se pasan al script mediante JSON
+var ventasData = @Html.Raw(Json.Encode(Model));
+
+// Función para renderizar las facturas
+function renderFacturas(data) {
+    var container = document.getElementById('facturasContainer');
+    var groupedData = {};
+
+    // Agrupar las ventas por IdVenta
+    data.forEach(function(item) {
+        if (!groupedData[item.IdVenta]) {
+            groupedData[item.IdVenta] = {
+                IdVenta: item.IdVenta,
+                FechaRegistro: new Date(item.FechaRegistro).toLocaleDateString('es-ES'), // Formato dd/MM/yyyy
+                NombreCliente: item.NombreCliente,
+                ApellidoCliente: item.ApellidoCliente,
+                IdTransaccion: item.IdTransaccion,
+                Productos: []
+            };
+        }
+        groupedData[item.IdVenta].Productos.push({
+            NombreProducto: item.oProducto.Nombre,
+            Cantidad: item.Cantidad,
+            PrecioProducto: item.PrecioProducto,
+            TotalProducto: item.TotalProducto
+        });
+    });
+
+    // Crear el HTML para cada factura
+    var html = '';
+    Object.keys(groupedData).forEach(function(key) {
+        var factura = groupedData[key];
+        html += `
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse${factura.IdVenta}">
+                            Factura: ${factura.IdVenta} - ${factura.FechaRegistro}
+                        </button>
+                    </h5>
+                </div>
+                <div id="collapse${factura.IdVenta}" class="collapse">
+                    <div class="card-body">
+                        <p><strong>Cliente:</strong> ${factura.NombreCliente} ${factura.ApellidoCliente}</p>
+                        <p><strong>ID Transacción:</strong> ${factura.IdTransaccion}</p>
+                        <table class="table table-bordered table-hover">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio Unitario</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${factura.Productos.map(producto => `
+                                    <tr>
+                                        <td>${producto.NombreProducto}</td>
+                                        <td>${producto.Cantidad}</td>
+                                        <td>${producto.PrecioProducto.toFixed(2)}</td>
+                                        <td>${producto.TotalProducto.toFixed(2)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        <p><strong>Total de la Factura:</strong> ${factura.Productos.reduce((acc, p) => acc + p.TotalProducto, 0).toFixed(2)}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+// Ejecutar la función para renderizar las facturas
+renderFacturas(ventasData);
+</script>
+
+<style>
+    .card-header {
+        background-color: #f8f9fa;
+    }
+
+    .table th, .table td {
+        text-align: center;
+    }
+
+    .btn-link {
+        text-decoration: none;
+        font-weight: bold;
+    }
+</style>

@@ -8,7 +8,7 @@ namespace CapaEntidad
 {
     public class Dashboard
     {
-        public int TotalCLiente { get; set;}
+        public int TotalCliente { get; set;}
         public int TotalVenta { get;set;}
         public int TotalProducto { get; set;}
 

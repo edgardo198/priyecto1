@@ -1,16 +1,11 @@
-﻿using System.Data;
-using System.Collections;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Web;
-using System.Web.Mvc;
-
-using CapaEntidad;
+﻿using CapaEntidad;
 using CapaNegocio;
 using ClosedXML.Excel;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Web.Mvc;
+using System.Data;
 using System;
 
 namespace CapaPresentacionAdmin.Controllers
@@ -22,16 +17,16 @@ namespace CapaPresentacionAdmin.Controllers
         {
             return View();
         }
+
         public ActionResult Usuario()
         {
             return View();
         }
+
         [HttpGet]
         public JsonResult ListarUsuarios()
         {
-            List<Usuario> Olista = new List<Usuario>();
-            Olista = new CN_Usuarios().Listar();
-
+            List<Usuario> Olista = new CN_Usuarios().Listar();
             return Json(new { data = Olista }, JsonRequestBehavior.AllowGet);
         }
 
@@ -40,16 +35,15 @@ namespace CapaPresentacionAdmin.Controllers
         {
             object resultado;
             string mensaje = string.Empty;
-            if (objeto.IdUsuario== 0){
+            if (objeto.IdUsuario == 0)
+            {
                 resultado = new CN_Usuarios().Registrar(objeto, out mensaje);
             }
             else
             {
                 resultado = new CN_Usuarios().Editar(objeto, out mensaje);
             }
-
-            return Json(new {resultado = resultado, mensaje = mensaje}, JsonRequestBehavior.AllowGet);
-
+            return Json(new { resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
         [HttpPost]
@@ -58,14 +52,13 @@ namespace CapaPresentacionAdmin.Controllers
             bool respuesta = false;
             string mensaje = string.Empty;
             respuesta = new CN_Usuarios().Eliminar(id, out mensaje);
-
             return Json(new { resultado = respuesta, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
+
         [HttpGet]
         public JsonResult ListaReporte(string fechainicio, string fechafin, string idtransaccion)
         {
-            List<Reporte> oLista = new List<Reporte>();
-            oLista = new CN_Reporte().Ventas(fechainicio,fechafin,idtransaccion);
+            List<Reporte> oLista = new CN_Reporte().Ventas(fechainicio, fechafin, idtransaccion);
             return Json(new { data = oLista }, JsonRequestBehavior.AllowGet);
         }
 
@@ -75,15 +68,14 @@ namespace CapaPresentacionAdmin.Controllers
             Dashboard objeto = new CN_Reporte().VerDashboard();
             return Json(new { resultado = objeto }, JsonRequestBehavior.AllowGet);
         }
+
         [HttpPost]
         public FileResult ExportarVenta(string fechainicio, string fechafin, string idtransaccion)
         {
-            List<Reporte> oLista = new List<Reporte>();
-            oLista = new CN_Reporte().Ventas(fechainicio, fechafin, idtransaccion);
+            List<Reporte> oLista = new CN_Reporte().Ventas(fechainicio, fechafin, idtransaccion);
 
             DataTable dt = new DataTable();
-
-            dt.Locale= new CultureInfo("en-HN");
+            dt.Locale = new CultureInfo("en-HN");
             dt.Columns.Add("Fecha Venta", typeof(string));
             dt.Columns.Add("Cliente", typeof(string));
             dt.Columns.Add("Producto", typeof(string));
@@ -91,8 +83,8 @@ namespace CapaPresentacionAdmin.Controllers
             dt.Columns.Add("Cantidad", typeof(int));
             dt.Columns.Add("Total", typeof(decimal));
             dt.Columns.Add("Id Transaccion", typeof(string));
-        
-            foreach(Reporte rp in oLista)
+
+            foreach (Reporte rp in oLista)
             {
                 dt.Rows.Add(new object[]
                 {
@@ -113,10 +105,9 @@ namespace CapaPresentacionAdmin.Controllers
                 using (MemoryStream stream = new MemoryStream())
                 {
                     wb.SaveAs(stream);
-                    return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReporteVenta" + DateTime.Now.ToString() + ".xlsx");
+                    return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReporteVenta_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xlsx");
                 }
             }
-
         }
     }
 }

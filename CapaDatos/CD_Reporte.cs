@@ -1,18 +1,16 @@
-﻿using CapaEntidad;
+﻿// CapaDatos/CD_Reporte.cs
+using CapaEntidad;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Data.SqlClient;
 using System.Globalization;
 
 namespace CapaDatos
 {
-    public  class CD_Reporte
+    public class CD_Reporte
     {
-        public List<Reporte> Ventas(string fechainicio, string fechafin, string idtransaccion)
+        public List<Reporte> Ventas(DateTime? fechainicio, DateTime? fechafin, string idtransaccion)
         {
             List<Reporte> lista = new List<Reporte>();
 
@@ -20,14 +18,12 @@ namespace CapaDatos
             {
                 using (SqlConnection oconexion = new SqlConnection(Conexion.cn))
                 {
-
-
                     SqlCommand cmd = new SqlCommand("sp_ReporteVentas", oconexion);
-                    cmd.Parameters.AddWithValue("fechainicio", fechainicio);
-                    cmd.Parameters.AddWithValue("fechafin", fechafin);
-                    cmd.Parameters.AddWithValue("idtransaccion", idtransaccion);
-
                     cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@fechainicio", fechainicio.HasValue ? (object)fechainicio.Value : DBNull.Value);
+                    cmd.Parameters.AddWithValue("@fechafin", fechafin.HasValue ? (object)fechafin.Value : DBNull.Value);
+                    cmd.Parameters.AddWithValue("@idtransaccion", string.IsNullOrEmpty(idtransaccion) ? (object)DBNull.Value : idtransaccion);
 
                     oconexion.Open();
                     using (SqlDataReader dr = cmd.ExecuteReader())
@@ -36,30 +32,26 @@ namespace CapaDatos
                         {
                             lista.Add(new Reporte()
                             {
-                                FechaVenta = dr["FechaVenta"].ToString(),
-                                Cliente= dr["Cliente"].ToString(),
+                                FechaVenta = Convert.ToDateTime(dr["FechaRegistro"]).ToString("dd/MM/yyyy"),
+                                Cliente = dr["Cliente"].ToString(),
                                 Producto = dr["Producto"].ToString(),
-                                Precio = Convert.ToDecimal (dr["Precio"],new CultureInfo("es-HN")),
-                                Cantidad = Convert.ToInt32(dr["Cantidad"].ToString()),
-                                Total = Convert.ToDecimal(dr["Total"], new CultureInfo("es-HN")),
+                                Precio = Convert.ToDecimal(dr["Precio"], CultureInfo.InvariantCulture),
+                                Cantidad = Convert.ToInt32(dr["Cantidad"]),
+                                Total = Convert.ToDecimal(dr["Total"], CultureInfo.InvariantCulture),
                                 IdTransaccion = dr["IdTransaccion"].ToString()
-
                             });
                         }
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                lista = new List<Reporte>();
+                // Manejo de errores
+                throw new Exception("Error al obtener los datos del reporte: " + ex.Message);
             }
+
             return lista;
         }
-
-
-
-
-
 
         public Dashboard VerDashboard()
         {
@@ -75,26 +67,26 @@ namespace CapaDatos
                     oconexion.Open();
                     using (SqlDataReader dr = cmd.ExecuteReader())
                     {
-                        while (dr.Read())
+                        if (dr.Read())
                         {
                             objeto = new Dashboard()
                             {
-                                TotalCLiente = Convert.ToInt32(dr["TotalCliente"]),
+                                TotalCliente = Convert.ToInt32(dr["TotalCliente"]), 
                                 TotalVenta = Convert.ToInt32(dr["TotalVenta"]),
-                                TotalProducto = Convert.ToInt32(dr["TotalProducto"]),
-
-
-
+                                TotalProducto = Convert.ToInt32(dr["TotalProducto"])
                             };
                         }
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                objeto = new Dashboard();
+                // Manejo de errores
+                throw new Exception("Error al obtener los datos del dashboard: " + ex.Message);
             }
+
             return objeto;
         }
     }
 }
+

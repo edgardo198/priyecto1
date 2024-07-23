@@ -16,5 +16,12 @@ namespace CapaEntidad
         public decimal Total { get; set; }
         public string IdTransaccion { get; set; }
         public DataRow IdProducto { get; set; }
+
+        public string NombreCliente { get; set; }
+        public string ApellidoCliente { get; set; }
+        public decimal PrecioProducto { get; set; }
+        public decimal TotalProducto { get; set; }
+        public DateTime FechaRegistro { get; set; }
+
     }
 }

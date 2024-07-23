@@ -8,6 +8,7 @@ namespace CapaDatos
 {
     public class CD_Venta
     {
+        // Método para registrar una venta
         public bool Registrar(Venta obj, DataTable DetalleVenta, out string Mensaje)
         {
             bool respuesta = false;
@@ -43,5 +44,76 @@ namespace CapaDatos
             }
             return respuesta;
         }
+
+        public List<DetalleVenta> ObtenerVentasPorCliente(int idCliente)
+        {
+            List<DetalleVenta> lista = new List<DetalleVenta>();
+
+            try
+            {
+                using (SqlConnection oconexion = new SqlConnection(Conexion.cn))
+                {
+                    string query = @"
+            SELECT 
+                v.IdVenta,
+                v.IdTransaccion,
+                v.FechaRegistro,
+                c.Nombre AS NombreCliente,
+                c.Apellido AS ApellidoCliente,
+                p.Nombre AS NombreProducto,
+                dv.Cantidad,
+                p.Precio AS PrecioProducto,
+                (dv.Cantidad * p.Precio) AS TotalProducto
+            FROM 
+                Venta v
+            INNER JOIN 
+                Cliente c ON v.IdCliente = c.IdCliente
+            INNER JOIN 
+                DETALLE_VENTA dv ON v.IdVenta = dv.IdVenta
+            INNER JOIN 
+                Producto p ON dv.IdProducto = p.IdProducto
+            WHERE 
+                v.IdCliente = @IdCliente
+            ORDER BY
+                v.FechaRegistro DESC";
+
+                    SqlCommand cmd = new SqlCommand(query, oconexion);
+                    cmd.Parameters.AddWithValue("@IdCliente", idCliente);
+                    cmd.CommandType = CommandType.Text;
+
+                    oconexion.Open();
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            lista.Add(new DetalleVenta()
+                            {
+                                IdVenta = Convert.ToInt32(dr["IdVenta"]),
+                                IdTransaccion = dr["IdTransaccion"].ToString(),
+                                FechaRegistro = Convert.ToDateTime(dr["FechaRegistro"]),
+                                NombreCliente = dr["NombreCliente"].ToString(),
+                                ApellidoCliente = dr["ApellidoCliente"].ToString(),
+                                oProducto = new Producto
+                                {
+                                    Nombre = dr["NombreProducto"].ToString(),
+                                    Precio = Convert.ToDecimal(dr["PrecioProducto"])
+                                },
+                                Cantidad = Convert.ToInt32(dr["Cantidad"]),
+                                TotalProducto = Convert.ToDecimal(dr["TotalProducto"]),
+                                PrecioProducto = Convert.ToDecimal(dr["PrecioProducto"])
+                            });
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Manejo de excepciones
+                throw ex;
+            }
+
+            return lista;
+        }
+
     }
 }

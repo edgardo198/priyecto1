@@ -24,7 +24,7 @@ namespace CapaPresentacionTienda.Controllers
             return View();
         }
 
-        public ActionResult DetalleProducto(int idproducto=0)
+        public ActionResult DetalleProducto(int idproducto = 0)
         {
             Producto oProducto = new Producto();
             bool conversion;
@@ -101,7 +101,7 @@ namespace CapaPresentacionTienda.Controllers
 
             string mensaje = string.Empty;
 
-            if(existe)
+            if (existe)
             {
                 mensaje = "El producto ya esta en el carrito";
 
@@ -119,7 +119,7 @@ namespace CapaPresentacionTienda.Controllers
         {
             int idcliente = ((Cliente)Session["Cliente"]).IdCliente;
             int cantidad = new CN_Carrito().CantidadEnCarrito(idcliente);
-            return Json(new { cantidad = cantidad}, JsonRequestBehavior.AllowGet);
+            return Json(new { cantidad = cantidad }, JsonRequestBehavior.AllowGet);
         }
 
         [HttpPost]
@@ -172,7 +172,7 @@ namespace CapaPresentacionTienda.Controllers
             int idcliente = ((Cliente)Session["Cliente"]).IdCliente;
             bool respuesta = false;
             string mensaje = string.Empty;
-            respuesta = new  CN_Carrito().EliminarCarrito(idcliente, idproducto);
+            respuesta = new CN_Carrito().EliminarCarrito(idcliente, idproducto);
 
             return Json(new { respuesta = respuesta, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
@@ -194,7 +194,7 @@ namespace CapaPresentacionTienda.Controllers
         }
 
         [HttpPost]
-        public JsonResult ObtenerDsitrito(string iddepartamento,string idprovincia)
+        public JsonResult ObtenerDsitrito(string iddepartamento, string idprovincia)
         {
             List<Distrito> oLista = new List<Distrito>();
             oLista = new CN_Ubicacion().ObtenerDistrito(iddepartamento, idprovincia);
@@ -365,6 +365,26 @@ namespace CapaPresentacionTienda.Controllers
 
             return View();
         }
-        
+        private CN_Venta objCapaNegocio = new CN_Venta();
+
+        public ActionResult MisCompras()
+        {
+            // Verificar si la sesión contiene un objeto Cliente
+            if (Session["Cliente"] == null)
+            {
+                // Redirigir al usuario a la página de inicio si no hay un cliente en la sesión
+                return RedirectToAction("Index", "Tienda");
+            }
+
+            // Obtener el objeto Cliente desde la sesión y extraer el IdCliente
+            var cliente = (Cliente)Session["Cliente"];
+            int idCliente = cliente.IdCliente;
+
+            // Obtener la lista de compras para el cliente
+            List<DetalleVenta> listaCompras = objCapaNegocio.ObtenerVentasPorCliente(idCliente);
+
+            // Pasar la lista de compras a la vista
+            return View(listaCompras);
+        }
     }
 }

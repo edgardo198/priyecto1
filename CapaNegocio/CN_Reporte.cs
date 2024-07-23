@@ -2,25 +2,45 @@
 using CapaEntidad;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CapaNegocio
 {
     public class CN_Reporte
     {
-        private CD_Reporte objCapaDatos = new CD_Reporte();
-
         public List<Reporte> Ventas(string fechainicio, string fechafin, string idtransaccion)
         {
-            return objCapaDatos.Ventas(fechainicio, fechafin, idtransaccion);       
+            DateTime? fechaInicioParsed = null;
+            DateTime? fechaFinParsed = null;
+
+            // Intenta convertir fechainicio a DateTime?
+            if (!string.IsNullOrEmpty(fechainicio))
+            {
+                DateTime fechaInicioTemp;
+                if (DateTime.TryParse(fechainicio, out fechaInicioTemp))
+                {
+                    fechaInicioParsed = fechaInicioTemp;
+                }
+            }
+
+            // Intenta convertir fechafin a DateTime?
+            if (!string.IsNullOrEmpty(fechafin))
+            {
+                DateTime fechaFinTemp;
+                if (DateTime.TryParse(fechafin, out fechaFinTemp))
+                {
+                    fechaFinParsed = fechaFinTemp;
+                }
+            }
+
+            CD_Reporte datos = new CD_Reporte();
+            return datos.Ventas(fechaInicioParsed, fechaFinParsed, idtransaccion);
         }
 
         public Dashboard VerDashboard()
         {
-            return objCapaDatos.VerDashboard();
-
+            CD_Reporte datos = new CD_Reporte();
+            return datos.VerDashboard();
         }
     }
 }
+
